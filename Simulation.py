@@ -14,10 +14,13 @@ H = 2.2 #mètres
 m = 3
 dy = H/m
 
-T = np.zeros(m+1, n+1)
+dt = 1
+nt = 1800
 
-temps = 1800 #heures
+T = np.zeros((m+1, n+1)) #matrice x y
+T_hist = np.zeros((nt+1, m+1)) #matrice xy t
 
 #Conditions limites
-for i in range (0, n):
- T[i, :] = 
+for t in range (0,1800):
+    for i in range (0, n):
+        T[i, :] = 
