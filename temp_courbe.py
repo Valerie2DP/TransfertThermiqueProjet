@@ -19,6 +19,12 @@ df_out_temp = df["Outdoor temperature [deg. C]"]
 df_out_hum = df["Outdoor relative humidity [%]"]
 #print(new_times)
 
+low_level = [df.loc[:,"T[degC]-Low-S1":"T[degC]-Low-S29"]] # permet de recuperer un intervalle de colonnes 
+mid_level = [df.loc[:,"T[degC]-Mid-S1":"T[degC]-Mid-S29"]]
+top_level = [df.loc[:,"T[degC]-Top-S1":"T[degC]-Top-S29"]]
+
+all_level = [df.loc[:,"T[degC]-Low-S1":"T[degC]-Top-S29"]]
+
 # Low
 df1 = df["T[degC]-Low-S1"]
 df2 = df["T[degC]-Low-S2"]
@@ -167,7 +173,7 @@ moyennes = len(moyenne_par_heure(df3))
 print(moyennes)
 
 
-def plot_more_figure(temp, capteurs_groups: list):
+def plot_more_curbe(temp, capteurs_groups: list):
     for nb, capteurs in enumerate(capteurs_groups):
         plt.figure()
         for capteur in capteurs:
@@ -179,12 +185,50 @@ def plot_more_figure(temp, capteurs_groups: list):
     plt.ylabel("Temperature")
     plt.show()
 
+def plot_moyenne(temp, niveau):
+    plt.figure()
+    for n, level in enumerate(niveau):
+            legende = ["low", "middle", "top"]
+            name_leg = legende[n]
+            for capteur in level:
+                # calcul de la moyenne des capteurs
+                moy = np.nanmean(capteur, axis=1)
+                plt.plot(heures_correspondantes(temp), moyenne_par_heure(moy), label=name_leg)
+                plt.title(f"graph {n+1}")
+                plt.xticks(np.arange(0, 1800, 180), fontsize=5)
+            plt.legend()
+            plt.xlabel("Time")
+            #plt.xticks(np.arange(0, 1800, 24))
+            plt.ylabel("Temperature")
+    plt.show()
 
+
+def moyenne_des_moyennes(temp, all_capteurs):
+    plt.figure()
+    for level in all_capteurs:
+        moy = np.nanmean(level, axis=1)
+        plt.plot(heures_correspondantes(temp), moyenne_par_heure(moy), label="moyenne de tous les capteurs")
+        plt.title(f"graph {1}")
+        plt.xticks(np.arange(0, 1800, 180), fontsize=5)
+        plt.legend()
+        plt.xlabel("Time")
+        plt.ylabel("Temperature")
+        plt.show()
+
+
+
+
+
+moyenne_des_moyennes(new_times, all_level)
 
 # new_time représente une liste de temps en heure qui commence à la première heure obtenue, on peut illustrer chacune des courbes des capteurs qui sont tous regrouper dans une liste principale et les différents niveau pour un même capteur (low, med, top) se retrouve dans une nouvelle liste.
 # la fonction moyenne_par_heure ne prend pas en compte les premières données, elle commence en même temps que la première heure et effectue la moyenne des données de température, pour en retourner une nouvelle liste
 # le tous est illustrer avec la fonction suivante
 
-plot_more_figure(new_times, [[df3, df3m, df3h], [df4, df4m, df4h]])
+#plot_more_curbe(new_times, [[df3, df3m, df3h], [df4, df4m, df4h]])
+#plot_moyenne(new_times, [low_level, mid_level, top_level])
+
+
+
 
 
