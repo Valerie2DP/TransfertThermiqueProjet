@@ -58,36 +58,41 @@ def moyenne_par_heure(temperatures):
     return moyennes
 
 
-## Pour la stratification thermique, faire moyenne de chaque capteur par niveau 
+## Pour la stratification thermique, faire moyenne de chaque capteur par niveau (low, mid, top)
 low_level = df.loc[:,"T[degC]-Low-S1":"T[degC]-Low-S29"] # permet de recuperer un intervalle de colonnes 
 mid_level = df.loc[:,"T[degC]-Mid-S1":"T[degC]-Mid-S29"]
-top_level = df.loc[:,"T[degC]-Top-S1":"T[degC]-Low-S29"]
+top_level = df.loc[:,"T[degC]-Top-S1":"T[degC]-Top-S29"]
 
+## niveau low
 new_low_level = []
-for temperature in low_level:
-    print(len(temperature))
-    new_low_level.append(moyenne_par_heure(temperature))
+for column_name, column_data in low_level.items():
+    new_low_level.append(moyenne_par_heure(column_data))
+# faire la moyenne par heure 
+moy_low_level = np.nanmean(new_low_level, axis=0)
 
-print(np.shape(low_level))
-print(type(low_level))
+## niveau mid
+new_mid_level = []
+for column_name, column_data in mid_level.items():
+    new_mid_level.append(moyenne_par_heure(column_data))
+# faire la moyenne par heure 
+moy_mid_level = np.nanmean(new_mid_level, axis=0)
 
-# new_mid_level = []
-# for temperature in mid_level:
-#     new_mid_level.append(moyenne_par_heure(temperature))
-    
-# new_top_level = []
-# for temperature in top_level:
-#     new_top_level.append(moyenne_par_heure(temperature))
-
-print(len(low_level))
-# print(len(new_low_level))
+## niveau top
+new_top_level = []
+for column_name, column_data in top_level.items():
+    new_top_level.append(moyenne_par_heure(column_data))
+# faire la moyenne par heure 
+moy_top_level = np.nanmean(new_top_level, axis=0)
 
 # ## fabriquer une figure pour strafication
-# figure = plt.figure()
-# plt.plot(hours, np.nanmean(new_low_level), axis=1)
-# plt.plot(hours, np.nanmean(new_mid_level), axis=1)
-# plt.plot(hours, np.nanmean(new_top_level), axis=1)
-# plt.show()
+figure = plt.figure()
+plt.plot(hours, moy_low_level, label='Low')
+plt.plot(hours, moy_mid_level, label='Mid')
+plt.plot(hours, moy_top_level, label='Top')
+plt.axvline(x=850, ymin=5, ymax=55, linewidth=43, linestyle="--", color='black',zorder=1)
+plt.legend()
+# plt.xticks
+plt.show()
 
 
 ## calculer la moyenne des capteurs par niveau (ordre croissant de niveau, low-mid-top)
@@ -133,9 +138,9 @@ f.supylabel("Température [$^\circ$C]", fontsize=14)
 f.supxlabel("Temps [2 min]", fontsize=14)
 f.legend()
 
-##sauvegarder la figure:
-f.savefig('EvolutionTemperature2Plateau.png',dpi=200)
-print('cest fini')
+# ##sauvegarder la figure:
+# f.savefig('EvolutionTemperature2Plateau.png',dpi=200)
+# print('cest fini')
 
 
 # # lire les capteurs en dessous du plateau 1.. niveau low
