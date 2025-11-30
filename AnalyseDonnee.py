@@ -22,11 +22,11 @@ plateau_6 = [df.loc[:,"T[degC]-Low-S23":"T[degC]-Low-S29"], df.loc[:,"T[degC]-Mi
 
 ## Graphique de temperature par niveau pour le plateau 1 vs plateau 2
 liste_niveau = ['Low','Mid','Top']
-liste_plateau = [plateau_1, plateau_2, plateau_3, plateau_4, plateau_5, plateau_6]
-# liste_plateau = [plateau_1, plateau_2]
+# liste_plateau = [plateau_1, plateau_2, plateau_3, plateau_4, plateau_5, plateau_6]
+liste_plateau = [plateau_1, plateau_2]
 
 # faire plusieurs figure de plateau faire une boucle pour les 6 plateaux
-f, axs = plt.subplots(6, 1,figsize=(10,8), sharex=True)
+f, axs = plt.subplots(2, 1,figsize=(10,8), sharex=True)
 
 #un graphique par plateau
 for i, plateau in enumerate(liste_plateau):
@@ -53,7 +53,7 @@ f.supxlabel("Temps [2 min]", fontsize=14)
 f.legend()
 
 ##sauvegarder la figure:
-f.savefig('EvolutionTemperaturePlateau.png',dpi=200)
+f.savefig('EvolutionTemperature2Plateau.png',dpi=200)
 print('cest fini')
 
 

@@ -6,7 +6,7 @@ from datetime import datetime
 from scipy.stats import norm
 
 
-file_path = "/Users/smg/GitHub/transfert thermique/TransfertThermiqueProjet/measurements.csv"
+file_path = "measurements.csv"
 df = pd.read_csv(file_path, delimiter=";")
 
 time = df["Time"]

@@ -18,7 +18,7 @@ x = [n for n in range(1,50)]
 y = 0.2*np.array(x)
 
 plt.plot(x,y)
-plt.axvline(x=20, ymin=0, ymax=10, linewidth=3, linestyle="--", color='black')
+plt.axvline(x=20, ymin=0, ymax=10, linewidth=70, linestyle="--", color='black')
 plt.show()
 
 
