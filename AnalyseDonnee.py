@@ -85,14 +85,19 @@ for column_name, column_data in top_level.items():
 moy_top_level = np.nanmean(new_top_level, axis=0)
 
 # ## fabriquer une figure pour strafication
-figure = plt.figure()
+figure = plt.figure(figsize=(8,5))
 plt.plot(hours, moy_low_level, label='Low')
 plt.plot(hours, moy_mid_level, label='Mid')
 plt.plot(hours, moy_top_level, label='Top')
 plt.axvline(x=850, ymin=5, ymax=55, linewidth=43, linestyle="--", color='black',zorder=1)
+plt.xticks(np.arange(0, 1800, 180), rotation=20, fontsize=7)
+plt.ylabel("Température [$^\circ$C]", fontsize=14)
+plt.xlabel("Temps [H]", fontsize=14)
 plt.legend()
-# plt.xticks
-plt.show()
+plt.tight_layout()
+
+#sauvegarde de la stratification
+figure.savefig('StratificationThermique.png', dpi=300)
 
 
 ## calculer la moyenne des capteurs par niveau (ordre croissant de niveau, low-mid-top)
