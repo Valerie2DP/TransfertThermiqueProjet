@@ -75,7 +75,15 @@ new_top_level = []
 for temperature in top_level:
     new_top_level.append(moyenne_par_heure(temperature))
 
-## fabriquer une figure pour strafication
+print(len(low_level))
+print(len(new_low_level))
+
+# ## fabriquer une figure pour strafication
+# figure = plt.figure()
+# plt.plot(hours, np.nanmean(new_low_level), axis=1)
+# plt.plot(hours, np.nanmean(new_mid_level), axis=1)
+# plt.plot(hours, np.nanmean(new_top_level), axis=1)
+# plt.show()
 
 
 ## calculer la moyenne des capteurs par niveau (ordre croissant de niveau, low-mid-top)
