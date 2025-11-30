@@ -1,14 +1,82 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-
+from datetime import datetime
 
 df = pd.read_csv("measurements.csv", delimiter=";")
 
-## Pour la stratification thermique
-# low_level = df.loc[:,"T[degC]-Low-S1":"T[degC]-Low-S29"] # permet de recuperer un intervalle de colonnes 
-# mid_level = df.loc[:,"T[degC]-Mid-S1":"T[degC]-Mid-S29"]
-# top_level = df.loc[:,"T[degC]-Top-S1":"T[degC]-Low-S29"]
+## recupere les dates heure et minutes de l'acquisition de donnée du .csv
+time = df["Time"]
+new_times = []
+for t in time:
+    dt_values = datetime.strptime(t, "%Y-%m-%d %H:%M")
+    new_times.append(dt_values.strftime("%Y-%m-%d %H:%M"))
+
+## permet de garder les heures piles
+def heures_correspondantes(timestamps):
+    """
+    Prend une liste de timestamps au format '%Y-%m-%d %H:%M'
+    et retourne une liste contenant un timestamp par heure,
+    pour correspondre aux moyennes horaires.
+    """
+
+    heures = []
+    derniere_heure = None
+
+    for ts in timestamps:
+        # Convertit le string en datetime
+        dt = datetime.strptime(ts, "%Y-%m-%d %H:%M")
+        
+        # Si on change d'heure → on garde ce timestamp
+        if dt.hour != derniere_heure:
+            heures.append(ts)
+            derniere_heure = dt.hour
+
+    return heures[1:-1]
+hours = heures_correspondantes(new_times)
+
+def moyenne_par_heure(temperatures):
+    """Retourne une liste de moyennes horaires à partir 
+    de données prises aux 2 minutes.
+    
+    Paramètres:
+        temperatures (list of float): données brutes
+        
+    Retour:
+        list of float: moyennes par heure
+    """
+    moyennes = []
+    #print(hours)
+
+    pas = 30  # 30 valeurs = 1 heure
+
+    for y in range(25, len(temperatures), pas):
+        bloc = temperatures[y:y+pas]
+        if len(bloc) == pas:  # on ignore les blocs incomplets à la fin
+            moyennes.append(sum(bloc) / pas)
+
+    return moyennes
+
+
+## Pour la stratification thermique, faire moyenne de chaque capteur par niveau 
+low_level = df.loc[:,"T[degC]-Low-S1":"T[degC]-Low-S29"] # permet de recuperer un intervalle de colonnes 
+mid_level = df.loc[:,"T[degC]-Mid-S1":"T[degC]-Mid-S29"]
+top_level = df.loc[:,"T[degC]-Top-S1":"T[degC]-Low-S29"]
+
+new_low_level = []
+for temperature in low_level:
+    new_low_level.append(moyenne_par_heure(temperature))
+
+new_mid_level = []
+for temperature in mid_level:
+    new_mid_level.append(moyenne_par_heure(temperature))
+    
+new_top_level = []
+for temperature in top_level:
+    new_top_level.append(moyenne_par_heure(temperature))
+
+## fabriquer une figure pour strafication
+
 
 ## calculer la moyenne des capteurs par niveau (ordre croissant de niveau, low-mid-top)
 # moy_level = [np.nanmean(low_level,axis=1),  np.nanmean(mid_level,axis=1),  np.nanmean(top_level,axis=1)]
@@ -23,11 +91,11 @@ plateau_6 = [df.loc[:,"T[degC]-Low-S23":"T[degC]-Low-S29"], df.loc[:,"T[degC]-Mi
 
 ## Graphique de temperature par niveau pour le plateau 1 vs plateau 2
 liste_niveau = ['Low','Mid','Top']
-# liste_plateau = [plateau_1, plateau_2, plateau_3, plateau_4, plateau_5, plateau_6]
-liste_plateau = [plateau_1, plateau_2]
+liste_plateau = [plateau_1, plateau_2, plateau_3, plateau_4, plateau_5, plateau_6]
+# liste_plateau = [plateau_1, plateau_2]
 
 # faire plusieurs figure de plateau faire une boucle pour les 6 plateaux
-f, axs = plt.subplots(2, 1,figsize=(10,8), sharex=True)
+f, axs = plt.subplots(6, 1,figsize=(10,8), sharex=True)
 
 #un graphique par plateau
 for i, plateau in enumerate(liste_plateau):
