@@ -65,18 +65,22 @@ top_level = df.loc[:,"T[degC]-Top-S1":"T[degC]-Low-S29"]
 
 new_low_level = []
 for temperature in low_level:
+    print(len(temperature))
     new_low_level.append(moyenne_par_heure(temperature))
 
-new_mid_level = []
-for temperature in mid_level:
-    new_mid_level.append(moyenne_par_heure(temperature))
+print(np.shape(low_level))
+print(type(low_level))
+
+# new_mid_level = []
+# for temperature in mid_level:
+#     new_mid_level.append(moyenne_par_heure(temperature))
     
-new_top_level = []
-for temperature in top_level:
-    new_top_level.append(moyenne_par_heure(temperature))
+# new_top_level = []
+# for temperature in top_level:
+#     new_top_level.append(moyenne_par_heure(temperature))
 
 print(len(low_level))
-print(len(new_low_level))
+# print(len(new_low_level))
 
 # ## fabriquer une figure pour strafication
 # figure = plt.figure()
