@@ -4,12 +4,12 @@ import numpy as np
 from datetime import datetime
 
 #Paramètres physiques
-
+m =
+cp =
+C1 = m*cp
+R1 = #Résistance tehrmique de la dalle
+R2 = #Résistance thermique de l'isolant
 #Maillage
-L = 26.1 #mètres
-n = 4
-dx = L/n
-
 H = 2.2 #mètres
 m = 3
 dy = H/m
@@ -17,10 +17,13 @@ dy = H/m
 dt = 1
 nt = 1800
 
-T = np.zeros((m+1, n+1)) #matrice x y
-T_hist = np.zeros((nt+1, m+1)) #matrice xy t
+T = np.zeros((nt+1, m+1)) #matrice y t
 
-#Conditions limites
+#Condition limite
 for t in range (0,1800):
-    for i in range (0, n):
-        T[i, :] = 
+    T[t, m] = #Prendre les données de Text à chaque heure dans CSV
+
+#T entre dalle et isolant
+for t in range (0,1800):
+    for j in range (1, m-1, -1):
+        T[t, j] = T[t-1, j] * dt/C1 + T[t]  #Prendre les données de Text à chaque heure dans CSV
