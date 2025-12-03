@@ -89,80 +89,70 @@ for column_name, column_data in top_level.items():
 # faire la moyenne par heure 
 moy_top_level = np.nanmean(new_top_level, axis=0)
 
-# ## fabriquer une figure pour strafication
-figure = plt.figure(figsize=(8,5))
-plt.plot(hours[851:], moy_top_level[851:], label='Hauteur 1.2m')
-plt.plot(hours[851:], moy_mid_level[851:], label='Hauteur 0.8m')
-plt.plot(hours[851:], moy_low_level[851:], label='Hauteur 0.4m')
-plt.axvline(x=850, ymin=5, ymax=55, linewidth=43, linestyle="--", color='black',zorder=1)
-# plt.xticks(np.arange(851, 1800, 180), rotation=20, fontsize=7)
+# ## fabriquer une figure pour strafication, donnee a partir du 26 janvier... donc avec les heure pile a partir du 851 indices
+figure = plt.figure(figsize=(9,5))
+
+## formating necessaire pour avoir des heures apres le 26 janvier
+new_xtick = list(np.arange(0,949, 94))
+new_hourslabel = [hours[851:][n] for n in new_xtick]
+
+plt.plot(hours[851:], moy_top_level[851:], label='Hauteur 1.2m',color='mediumvioletred')
+plt.plot(hours[851:], moy_mid_level[851:], label='Hauteur 0.8m',color='darkorange')
+plt.plot(hours[851:], moy_low_level[851:], label='Hauteur 0.4m',color='green')
+plt.xticks(new_xtick, new_hourslabel, rotation=20, fontsize=9)
 plt.ylabel("Température [$^\circ$C]", fontsize=14)
-plt.xlabel("Temps [H]", fontsize=14)
+plt.xlabel("Temps [h]", fontsize=14)
 plt.legend()
 plt.tight_layout()
 
 #sauvegarde de la stratification
 figure.savefig('StratificationThermiquePerHour26janv.png', dpi=1200)
 
-## calculer la moyenne des capteurs par niveau (ordre croissant de niveau, low-mid-top)
+## calculer la moyenne des capteurs par niveau (ordre croissant de niveau, top-mid-low)
 # moy_level = [np.nanmean(low_level,axis=1),  np.nanmean(mid_level,axis=1),  np.nanmean(top_level,axis=1)]
 ## Temperature par plateau (ordre croissant de niveau, low-mid-top)
-plateau_1 = [df.loc[:,"T[degC]-Low-S1":"T[degC]-Low-S5"], df.loc[:,"T[degC]-Mid-S1":"T[degC]-Mid-S5"], df.loc[:,"T[degC]-Top-S1":"T[degC]-Top-S5"]]
-plateau_2 = [df.loc[:,"T[degC]-Low-S5":"T[degC]-Low-S9"], df.loc[:,"T[degC]-Mid-S5":"T[degC]-Mid-S9"], df.loc[:,"T[degC]-Top-S5":"T[degC]-Top-S9"]]
-plateau_3 = [df.loc[:,"T[degC]-Low-S9":"T[degC]-Low-S13"], df.loc[:,"T[degC]-Mid-S9":"T[degC]-Mid-S13"], df.loc[:,"T[degC]-Top-S9":"T[degC]-Top-S13"]]
-plateau_4 = [df.loc[:,"T[degC]-Low-S13":"T[degC]-Low-S19"], df.loc[:,"T[degC]-Mid-S13":"T[degC]-Mid-S19"], df.loc[:,"T[degC]-Top-S13":"T[degC]-Top-S19"]]
-plateau_5 = [df.loc[:,"T[degC]-Low-S19":"T[degC]-Low-S23"], df.loc[:,"T[degC]-Mid-S19":"T[degC]-Mid-S23"], df.loc[:,"T[degC]-Top-S19":"T[degC]-Top-S23"]]
-plateau_6 = [df.loc[:,"T[degC]-Low-S23":"T[degC]-Low-S29"], df.loc[:,"T[degC]-Mid-S23":"T[degC]-Mid-S29"], df.loc[:,"T[degC]-Top-S23":"T[degC]-Top-S29"]]
+plateau_1 = [df.loc[:,"T[degC]-Top-S1":"T[degC]-Top-S5"], df.loc[:,"T[degC]-Mid-S1":"T[degC]-Mid-S5"], df.loc[:,"T[degC]-Low-S1":"T[degC]-Low-S5"]]
+plateau_2 = [df.loc[:,"T[degC]-Top-S5":"T[degC]-Top-S9"], df.loc[:,"T[degC]-Mid-S5":"T[degC]-Mid-S9"], df.loc[:,"T[degC]-Low-S5":"T[degC]-Low-S9"]]
+plateau_3 = [df.loc[:,"T[degC]-Top-S9":"T[degC]-Top-S13"], df.loc[:,"T[degC]-Mid-S9":"T[degC]-Mid-S13"], df.loc[:,"T[degC]-Low-S9":"T[degC]-Low-S13"]]
+plateau_4 = [df.loc[:,"T[degC]-Top-S13":"T[degC]-Top-S19"], df.loc[:,"T[degC]-Mid-S13":"T[degC]-Mid-S19"], df.loc[:,"T[degC]-Low-S13":"T[degC]-Low-S19"]]
+plateau_5 = [df.loc[:,"T[degC]-Top-S19":"T[degC]-Top-S23"], df.loc[:,"T[degC]-Mid-S19":"T[degC]-Mid-S23"], df.loc[:,"T[degC]-Low-S19":"T[degC]-Low-S23"]]
+plateau_6 = [df.loc[:,"T[degC]-Top-S23":"T[degC]-Top-S29"], df.loc[:,"T[degC]-Mid-S23":"T[degC]-Mid-S29"], df.loc[:,"T[degC]-Low-S23":"T[degC]-Low-S29"]]
 
 ## gerer les plateaus avec l'approximation par heure
 liste_plateau = [plateau_1, plateau_2, plateau_3, plateau_4, plateau_5, plateau_6]
+liste_moy_per_level_new_plateau = []
 liste_new_plateau = []
+
 for plateau in liste_plateau:
     new_plateau = []
-
     for levels in plateau:
         new_level = []
         for column_name, column_data in levels.items():
             new_level.append(moyenne_par_heure(column_data))
         new_plateau.append(new_level)
     
+    # ajouter les moyennes par niveau de chaque plateau par heure
     liste_new_plateau.append(new_plateau)
+    # ajouter la moyenne des trois niveau par plateau par heure
+    liste_moy_per_level_new_plateau.append(np.nanmean(new_plateau, axis=1))
 
-## Graphique de temperature par niveau pour le plateau 1 vs plateau 2
-# liste_plateau = [plateau_1, plateau_2]
+## moyenne de chaque niveau par plateau
+liste_moy_per_plateau = []
+for plateau in liste_moy_per_level_new_plateau:
+    liste_moy_per_plateau.append(np.nanmean(plateau, axis=0))
 
-# faire plusieurs figure de plateau faire une boucle pour les 6 plateaux
+
+# Faire plusieurs figure de plateau faire une boucle pour les 6 plateaux
 f, axs = plt.subplots(6, 1,figsize=(10,8), sharex=True)
-liste_niveau = ['Low','Mid','Top'] ## eventuellementchang
-#un graphique par plateau... # incorporer la quantification par heure dans le temps
-for i, plateau in enumerate(liste_new_plateau):
-    if i == 0:
-        ## plot courbe de chaque niveau par plateau
-        for n, level in enumerate(plateau):
-            # calcul de la moyenne des capteurs
-            moy_plateau = np.nanmean(level, axis=0) ## axis = 0 pour liste de plateau en 2min
-            axs[i].plot(np.arange(len(moy_plateau)), moy_plateau, label=liste_niveau[n], zorder=0)
 
-    else:
-        ## plot courbe de chaque niveau par plateau
-        for n, level in enumerate(plateau):
-            # calcul de la moyenne des capteurs
-            moy_plateau = np.nanmean(level, axis=0) ## axis = 0 pour liste de plateau en 2min
-            axs[i].plot(np.arange(len(moy_plateau)), moy_plateau, zorder=0)
-            # axs[i].set_xticklabels(np.arange(0, 1800, 180), rotation=20, fontsize=7) ### modifier les labels fourni pour avoir les dates en heure
-
-
-    # axs[i].axvline(x=20000, ymin=5, ymax=55, linewidth=43, linestyle="--", color='black',zorder=1)
-
-## ameliorer positionnement du titre, avec top blabla..mise en forme latex
-plt.suptitle('Évolution de la température moyenne sous chaque le plateau par niveau', fontsize=16)
+for i, plateau in enumerate(liste_moy_per_plateau):
+    axs[i].plot(np.arange(len(liste_moy_per_plateau))[851:], liste_moy_per_plateau[851:], zorder=0)
+    # axs[i].set_xticks() ## a mieux gerer
 f.supylabel("Température [$^\circ$C]", fontsize=14)
-f.supxlabel("Temps [2 min]", fontsize=14)
-f.legend()
 
-# ##sauvegarder la figure:
-# f.savefig('EvolutionTemperaturePlateauPerHour.png',dpi=1300)
-print('cest fini')
+# # ##sauvegarder la figure:
+f.savefig('EvolutionTemperatureMoyPlateauPerHour.png',dpi=1300) ### gros probleme a suivre
+# print('cest fini')
 
 
 ###################################################################################### regle de controle

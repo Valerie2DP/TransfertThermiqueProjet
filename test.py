@@ -22,37 +22,30 @@ plt.axvline(x=20, ymin=0, ymax=10, linewidth=70, linestyle="--", color='black')
 plt.show()
 
 
+########################################################################## ancien graphique pour levolution de la temperature par plateau avec les 3 niveaux
+f, axs = plt.subplots(6, 1,figsize=(10,8), sharex=True)
+liste_niveau = ['Low','Mid','Top'] ## eventuellementchang
+#un graphique par plateau... # incorporer la quantification par heure dans le temps
+for i, plateau in enumerate(liste_new_plateau):
+    if i == 0:
+        ## plot courbe de chaque niveau par plateau
+        for n, level in enumerate(plateau):
+            # calcul de la moyenne des capteurs
+            moy_plateau = np.nanmean(level, axis=0) ## axis = 0 pour liste de plateau en 2min
+            axs[i].plot(np.arange(len(moy_plateau)), moy_plateau, label=liste_niveau[n], zorder=0)
+
+    else:
+        ## plot courbe de chaque niveau par plateau
+        for n, level in enumerate(plateau):
+            # calcul de la moyenne des capteurs
+            moy_plateau = np.nanmean(level, axis=0) ## axis = 0 pour liste de plateau en 2min
+            axs[i].plot(np.arange(len(moy_plateau)), moy_plateau, zorder=0)
+            
 
 
-##################################version qui marche 
 
-## Graphique de temperature par niveau pour le plateau 1 vs plateau 2
-liste_niveau = ['Low','Mid','Top']
-
-# faire plusieurs figure de plateau a cote
-f, axs = plt.subplots(2, 1,figsize=(10,7), sharex=True)
-
-for n, level in enumerate(plateau_1):
-    # calcul de la moyenne des capteurs
-    moy_plateau = np.nanmean(level, axis=1)
-    axs[0].plot(np.arange(len(moy_plateau)), moy_plateau, label=liste_niveau[n], zorder=0)
-
-axs[0].axvline(x=20000, ymin=5, ymax=55, linewidth=43, linestyle="--", color='black',zorder=1)
-axs[0].set_title('Évolution de la température sous le plateau 1 \n moyenne de capteurs par niveau')
-axs[0].set_ylabel('Température [$^\circ$C]')
-# ax1.set_xlabel('Temps [2min]')
-axs[0].legend()
-
-
-for n, level in enumerate(plateau_2):
-    # calcul de la moyenne des capteurs
-    moy_plateau = np.nanmean(level, axis=1)
-    axs[1].plot(np.arange(len(moy_plateau)), moy_plateau, label=liste_niveau[n], zorder=0)
-
-axs[1].axvline(x=20000, ymin=5, ymax=55, linewidth=43, linestyle="--", color='black',zorder=1)
-# ax2.set_title('Évolution de la température sous le plateau 1 \n moyenne de capteurs par niveau')
-axs[1].set_ylabel('Température [$^\circ$C]')
-# ax2.set_xlabel('Temps [2min]')
-axs[1].legend()
-
-plt.show()
+## ameliorer positionnement du titre, avec top blabla..mise en forme latex
+plt.suptitle('Évolution de la température moyenne sous chaque le plateau par niveau', fontsize=16)
+f.supylabel("Température [$^\circ$C]", fontsize=14)
+f.supxlabel("Temps [2 min]", fontsize=14)
+f.legend()
