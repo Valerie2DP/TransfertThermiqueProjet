@@ -96,7 +96,7 @@ figure = plt.figure(figsize=(9,5))
 new_xtick = list(np.arange(0,949, 94))
 new_hourslabel = [hours[851:][n] for n in new_xtick]
 
-plt.plot(hours[851:], moy_top_level[851:], label='Hauteur 1.2m',color='mediumvioletred')
+plt.plot(hours[851:], moy_top_level[851:], label='Hauteur 1.2m',color='blue')
 plt.plot(hours[851:], moy_mid_level[851:], label='Hauteur 0.8m',color='darkorange')
 plt.plot(hours[851:], moy_low_level[851:], label='Hauteur 0.4m',color='green')
 plt.xticks(new_xtick, new_hourslabel, rotation=20, fontsize=9)
@@ -141,24 +141,33 @@ liste_moy_per_plateau = []
 for plateau in liste_moy_per_level_new_plateau:
     liste_moy_per_plateau.append(np.nanmean(plateau, axis=0))
 
-
 # Faire plusieurs figure de plateau faire une boucle pour les 6 plateaux
 f, axs = plt.subplots(6, 1,figsize=(10,8), sharex=True)
+liste_nom_plateau = ['P1','P2','P3','P4','P5','P6']
+liste_couleur = ['blue', 'green', 'purple', 'darkorange', 'cornflowerblue', 'firebrick']
 
 for i, plateau in enumerate(liste_moy_per_plateau):
-    axs[i].plot(np.arange(len(liste_moy_per_plateau))[851:], liste_moy_per_plateau[851:], zorder=0)
-    # axs[i].set_xticks() ## a mieux gerer
+    axs[i].plot(hours[851:], plateau[851:], label=liste_nom_plateau[i], color=liste_couleur[i],zorder=0)
+    axs[i].set_xticks(new_xtick, new_hourslabel, rotation=20, fontsize=9)
 f.supylabel("Température [$^\circ$C]", fontsize=14)
+f.supxlabel("Temps [h]", fontsize=14)
+f.legend(bbox_to_anchor=(0.98,0.98))
 
-# # ##sauvegarder la figure:
-f.savefig('EvolutionTemperatureMoyPlateauPerHour.png',dpi=1300) ### gros probleme a suivre
-# print('cest fini')
+##sauvegarder la figure:
+f.savefig('EvolutionTemperatureMoyPlateauPerHour.png', dpi=1300) ### gros probleme a suivre
+
 
 
 ###################################################################################### regle de controle
 # regarder le capteur 1 et le capteur 29
-# thermocouple_1 = [df['T[degC]-Low-S1'], df['T[degC]-Mid-S1'], df['T[degC]-Top-S1']]
-# thermocouple_2 = [df['T[degC]-Low-S29'], df['T[degC]-Mid-S29'], df['T[degC]-Top-S29']]
+# temperature du milieu...
+
+thermocouple_1 = [df['T[degC]-Top-S1'], df['T[degC]-Mid-S1'], df['T[degC]-Low-S1']]
+thermocouple_2 = [df['T[degC]-Top-S29'], df['T[degC]-Mid-S29'], df['T[degC]-Low-S29']]
+
+## fabrication de figure
+
+for level in 
 
 # ## quantifier par heure
 # moy_thermocouple_1 = []
