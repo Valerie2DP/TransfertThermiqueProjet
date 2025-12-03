@@ -2,11 +2,12 @@ import numpy as np
 import math
 import pandas as pd
 import matplotlib.pyplot as plt
+import csv
 from datetime import datetime
 from scipy.stats import norm
 
 
-file_path = "measurements.csv"
+file_path = "/Users/smg/GitHub/transfert thermique/TransfertThermiqueProjet/measurements.csv"
 df = pd.read_csv(file_path, delimiter=";")
 
 time = df["Time"]
@@ -24,6 +25,7 @@ mid_level = [df.loc[:,"T[degC]-Mid-S1":"T[degC]-Mid-S29"]]
 top_level = [df.loc[:,"T[degC]-Top-S1":"T[degC]-Top-S29"]]
 
 all_level = [df.loc[:,"T[degC]-Low-S1":"T[degC]-Top-S29"]]
+all_temperature = [df.loc[:,"Outdoor temperature [deg. C]":"T[degC]-Top-S29"]]
 
 # Low
 df1 = df["T[degC]-Low-S1"]
@@ -165,7 +167,7 @@ def moyenne_par_heure(temperatures):
     for y in range(25, len(temperatures), pas):
         bloc = temperatures[y:y+pas]
         if len(bloc) == pas:  # on ignore les blocs incomplets à la fin
-            moyennes.append(sum(bloc) / pas)
+            moyennes.append(sum(x for x in bloc if not isinstance(x, str)) / pas)
 
     return moyennes
 
@@ -219,7 +221,7 @@ def moyenne_des_moyennes(temp, all_capteurs):
 
 
 
-moyenne_des_moyennes(new_times, all_level)
+#moyenne_des_moyennes(new_times, all_level)
 
 # new_time représente une liste de temps en heure qui commence à la première heure obtenue, on peut illustrer chacune des courbes des capteurs qui sont tous regrouper dans une liste principale et les différents niveau pour un même capteur (low, med, top) se retrouve dans une nouvelle liste.
 # la fonction moyenne_par_heure ne prend pas en compte les premières données, elle commence en même temps que la première heure et effectue la moyenne des données de température, pour en retourner une nouvelle liste
@@ -228,6 +230,28 @@ moyenne_des_moyennes(new_times, all_level)
 #plot_more_curbe(new_times, [[df3, df3m, df3h], [df4, df4m, df4h]])
 #plot_moyenne(new_times, [low_level, mid_level, top_level])
 
+def nouveau_fichier_csv_en_heure(time_hours, all_value):
+    # Création du DataFrame avec la première colonne "Time"
+    lst = [0] * 1800
+    nouveau_fichier_csv = pd.DataFrame({"Time": heures_correspondantes(time_hours), "Outdoor temperature [deg. C]": lst, "Outdoor relative humidity [%]": lst, "T[degC]-Low-S1": lst, "T[degC]-Low-S2": lst, "T[degC]-Low-S3": lst, "T[degC]-Low-S4": lst, "T[degC]-Low-S5": lst, "T[degC]-Low-S6": lst, "T[degC]-Low-S7": lst, "T[degC]-Low-S8": lst, "T[degC]-Low-S9": lst, "T[degC]-Low-S10": lst, "T[degC]-Low-S11": lst, "T[degC]-Low-S12": lst, "T[degC]-Low-S13": lst, "T[degC]-Low-S14": lst, "T[degC]-Low-S15": lst, "T[degC]-Low-S16": lst, "T[degC]-Low-S17": lst, "T[degC]-Low-S18": lst, "T[degC]-Low-S19": lst, "T[degC]-Low-S20": lst, "T[degC]-Low-S21": lst, "T[degC]-Low-S22": lst, "T[degC]-Low-S23": lst, "T[degC]-Low-S24": lst, "T[degC]-Low-S25": lst, "T[degC]-Low-S26": lst, "T[degC]-Low-S27": lst, "T[degC]-Low-S28": lst, "T[degC]-Low-S29": lst, "T[degC]-Mid-S1": lst, "T[degC]-Mid-S2": lst, "T[degC]-Mid-S3": lst, "T[degC]-Mid-S4": lst, "T[degC]-Mid-S5": lst, "T[degC]-Mid-S6": lst, "T[degC]-Mid-S7": lst, "T[degC]-Mid-S8": lst, "T[degC]-Mid-S9": lst, "T[degC]-Mid-S10": lst, "T[degC]-Mid-S11": lst, "T[degC]-Mid-S12": lst, "T[degC]-Mid-S13": lst, "T[degC]-Mid-S14": lst, "T[degC]-Mid-S15": lst, "T[degC]-Mid-S16": lst, "T[degC]-Mid-S17": lst, "T[degC]-Mid-S18": lst, "T[degC]-Mid-S19": lst, "T[degC]-Mid-S20": lst, "T[degC]-Mid-S21": lst, "T[degC]-Mid-S22": lst, "T[degC]-Mid-S23": lst, "T[degC]-Mid-S24": lst, "T[degC]-Mid-S25": lst, "T[degC]-Mid-S26": lst, "T[degC]-Mid-S27": lst, "T[degC]-Mid-S28": lst, "T[degC]-Mid-S29": lst, "T[degC]-Top-S1": lst, "T[degC]-Top-S2": lst, "T[degC]-Top-S3": lst, "T[degC]-Top-S4": lst, "T[degC]-Top-S5": lst, "T[degC]-Top-S6": lst, "T[degC]-Top-S7": lst, "T[degC]-Top-S8": lst, "T[degC]-Top-S9": lst, "T[degC]-Top-S10": lst, "T[degC]-Top-S11": lst, "T[degC]-Top-S12": lst, "T[degC]-Top-S13": lst, "T[degC]-Top-S14": lst, "T[degC]-Top-S15": lst, "T[degC]-Top-S16": lst, "T[degC]-Top-S17": lst, "T[degC]-Top-S18": lst, "T[degC]-Top-S19": lst, "T[degC]-Top-S20": lst, "T[degC]-Top-S21": lst, "T[degC]-Top-S22": lst, "T[degC]-Top-S23": lst, "T[degC]-Top-S24": lst, "T[degC]-Top-S25": lst, "T[degC]-Top-S26": lst, "T[degC]-Top-S27": lst, "T[degC]-Top-S28": lst, "T[degC]-Top-S29": lst})
+    #print(nouveau_fichier_csv)
+    # Boucle sur les colonnes du DataFrame d'origine (sauf la première)
+    for all_colone in all_value:
+            for c, colone in enumerate(all_colone):
+                #print(type(colone))
+                #name = ["Outdoor temperature [deg. C]", "Outdoor relative humidity [%]", "T[degC]-Low-S1", "T[degC]-Low-S2", "T[degC]-Low-S3", "T[degC]-Low-S4", "T[degC]-Low-S5", "T[degC]-Low-S6", "T[degC]-Low-S7", "T[degC]-Low-S8", "T[degC]-Low-S9", "T[degC]-Low-S10", "T[degC]-Low-S11", "T[degC]-Low-S12", "T[degC]-Low-S13", "T[degC]-Low-S14", "T[degC]-Low-S15", "T[degC]-Low-S16", "T[degC]-Low-S17", "T[degC]-Low-S18", "T[degC]-Low-S19", "T[degC]-Low-S20", "T[degC]-Low-S21", "T[degC]-Low-S22", "T[degC]-Low-S23", "T[degC]-Low-S24", "T[degC]-Low-S25", "T[degC]-Low-S26", "T[degC]-Low-S27", "T[degC]-Low-S28", "T[degC]-Low-S29", "T[degC]-Mid-S1", "T[degC]-Mid-S2", "T[degC]-Mid-S3", "T[degC]-Mid-S4", "T[degC]-Mid-S5", "T[degC]-Mid-S6", "T[degC]-Mid-S7", "T[degC]-Mid-S8", "T[degC]-Mid-S9", "T[degC]-Mid-S10", "T[degC]-Mid-S11", "T[degC]-Mid-S12", "T[degC]-Mid-S13", "T[degC]-Mid-S14", "T[degC]-Mid-S15", "T[degC]-Mid-S16", "T[degC]-Mid-S17", "T[degC]-Mid-S18", "T[degC]-Mid-S19", "T[degC]-Mid-S20", "T[degC]-Mid-S21", "T[degC]-Mid-S22", "T[degC]-Mid-S23", "T[degC]-Mid-S24", "T[degC]-Mid-S25", "T[degC]-Mid-S26", "T[degC]-Mid-S27", "T[degC]-Mid-S28", "T[degC]-Mid-S29", "T[degC]-Top-S1", "T[degC]-Top-S2", "T[degC]-Top-S3", "T[degC]-Top-S4", "T[degC]-Top-S5", "T[degC]-Top-S6", "T[degC]-Top-S7", "T[degC]-Top-S8", "T[degC]-Top-S9", "T[degC]-Top-S10", "T[degC]-Top-S11", "T[degC]-Top-S12", "T[degC]-Top-S13", "T[degC]-Top-S14", "T[degC]-Top-S15", "T[degC]-Top-S16", "T[degC]-Top-S17", "T[degC]-Top-S18", "T[degC]-Top-S19", "T[degC]-Top-S20", "T[degC]-Top-S21", "T[degC]-Top-S22", "T[degC]-Top-S23", "T[degC]-Top-S24", "T[degC]-Top-S25", "T[degC]-Top-S26", "T[degC]-Top-S27", "T[degC]-Top-S28", "T[degC]-Top-S29"]
+                # calcul de la moyenne par heure pour cette colonne
+                #nouveau_fichier_csv[name[c]] = moyenne_par_heure(colone)
+                nouveau_fichier_csv[colone] = moyenne_par_heure(all_colone[colone])
+                #print(len(moyenne_par_heure(colone)))
+    print(nouveau_fichier_csv)
+
+    # Sauvegarde du fichier CSV final
+    nouveau_fichier_csv.to_csv("nouveau_fichier_de_données_en_heure.csv", index=False)
+
+
+
+nouveau_fichier_csv_en_heure(new_times, all_temperature)
 
 
 
