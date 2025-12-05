@@ -89,7 +89,7 @@ for t in range (2,nt-1):
             [0, 0, 0, 0, 0, 0, 0, -1/R_beton3, ((C/dt)+(1/R_beton3))] #Noeud 33
         ], dtype=float)
         B = np.array([T_ext[t]/Rcond, -q12 - cp*(gap12 + gap23/2 + gap1)*T_ext[t], C*T[t-1,0]/dt, T_ext[t]/Rcond, -q34 -(gap23/2 + gap34 + gap45/2)*cp*T_ext[t] , C*T[t-1,4]/dt, T_ext[t]/Rcond, -q56 -(gap45/2 + gap56 + gap6)*cp*T_ext[t], C*T[t-1,7]/dt]).reshape(-1, 1)
-        T[t] = np.linalg.solve(A, B)
+        T[t] = np.linalg.solve(A, B).flatten()
         n = t - 2
         T2[n, 0] = T[t, 1] #T12
         T2[n, 1] = T[t, 4] #T22
@@ -116,14 +116,14 @@ for t in range (2,nt-1):
             [1/Rconv, -((1/R_beton1)+(1/Rconv)) - cp*(a23+a32+(gap1 + gap12 + gap23/2)), 1/R_beton1, cp*(a23 + a32), 0, 0, 0, 0, 0], #Noeud 12
             [0, -1/R_beton1, ((C/dt)+(1/R_beton1)), 0, 0, 0, 0, 0, 0], #Noeud 13
             [0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0], #Noeud 21
-            [0, cp*(a32 + a23), 0, 1/Rconv,  -((1/R_beton)+(1/Rconv)) + -cp*(a32 + a23 + a45 + a54 + (gap23/2 + gap34 + gap45/2)), 1/R_beton2, 0, cp*(a45 + a54), 0], #Noeud 22
+            [0, cp*(a32 + a23), 0, 1/Rconv,  -((1/R_beton2)+(1/Rconv)) + -cp*(a32 + a23 + a45 + a54 + (gap23/2 + gap34 + gap45/2)), 1/R_beton2, 0, cp*(a45 + a54), 0], #Noeud 22
             [0, 0, 0, 0, -1/R_beton2, ((C/dt)+(1/R_beton2)), 0, 0, 0], #Noeud 23
             [0, 0, 0, 0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0], #Noeud 31
             [0, 0, 0, 0, cp*(a45 + a54), 0, 1/Rconv,  -((1/R_beton3)+(1/Rconv)) - cp*(a45 + a54 + (gap45/2 + gap56 + gap6)), 1/R_beton3], #Noeud 32
             [0, 0, 0, 0, 0, 0, 0, -1/R_beton3, ((C/dt)+(1/R_beton3))] #Noeud 33
         ], dtype=float)
         B = np.array([T_ext[t]/Rcond, -q12 - cp*(gap12 + gap23/2 + gap1)*T_ext[t], C*T[t-1,0]/dt, T_ext[t]/Rcond, -q34 -(gap23/2 + gap34 + gap45/2)*cp*T_ext[t] , C*T[t-1,4]/dt, T_ext[t]/Rcond, -q56 -(gap45/2 + gap56 + gap6)*cp*T_ext[t], C*T[t-1,7]/dt]).reshape(-1, 1)
-        T[t]  = np.linalg.solve(A, B)
+        T[t]  = np.linalg.solve(A, B).flatten()
         n = t - 2
         T2[n, 0] = T[t, 1] #T12
         T2[n, 1] = T[t, 4] #T22
