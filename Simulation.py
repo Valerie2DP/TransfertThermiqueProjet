@@ -3,6 +3,10 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
+# Utiliser un backend non-interactif pour éviter les problèmes
+import matplotlib
+matplotlib.use('Agg')
+
 #Paramètres physiques
 Long = 26.1 #m
 larg = 3.7 #m
@@ -56,18 +60,7 @@ T_ext = data['Outdoor temperature [deg. C]'].values
 T2 = np.zeros((nt-1, 3)) #matrice T2 t
 T3 = np.zeros((nt-1, 3)) #matrice T2 t
 #Système matriciel
-T = np.zeros((9,1)) 
-A = np.array([
-    [((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0, 0, 0, 0],  #Noeud 11
-    [1/Rconv, -((1/R_beton1)+(1/Rconv)) - cp*(a23+a32+(gap1 + gap12 + gap23/2)), 1/R_beton1, cp*(a23 + a32), 0, 0, 0, 0, 0], #Noeud 12
-    [0, -1/R_beton1, ((C/dt)+(1/R_beton1)), 0, 0, 0, 0, 0, 0], #Noeud 13
-    [0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0], #Noeud 21
-    [0, cp*(a32 + a23), 0, 1/Rconv,  -((1/R_beton2)+(1/Rconv)) + -cp*(a32 + a23 + a45 + a54 + (gap23/2 + gap34 + gap45/2)), 1/R_beton2, 0, cp*(a45 + a54), 0], #Noeud 22
-    [0, 0, 0, 0, -1/R_beton2, ((C/dt)+(1/R_beton2)), 0, 0, 0], #Noeud 23
-    [0, 0, 0, 0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0], #Noeud 31
-    [0, 0, 0, 0, cp*(a45 + a54), 0, 1/Rconv,  -((1/R_beton3)+(1/Rconv)) - cp*(a45 + a54 + (gap45/2 + gap56 + gap6)), 1/R_beton3], #Noeud 32
-    [0, 0, 0, 0, 0, 0, 0, -1/R_beton3, ((C/dt)+(1/R_beton3))] #Noeud 33
-], dtype=float)
+T = np.zeros((nt-1, 9))  # Store temperatures for all time steps, 9 nodes per time step 
 #Résolution
 for t in range (2,nt-1):
     if T_ext[t] < 3:
@@ -84,15 +77,27 @@ for t in range (2,nt-1):
         a54	= 0.2915
         a56	= 0.4694
         a65	= 0.4070
-        B = np.array([T_ext[t]/Rcond, -q12 - cp*(gap12 + gap23/2 + gap1)*T_ext[t], C*T[t-1,0]/dt, T_ext[t]/Rcond, -q34 -(gap23/2 + gap34 + gap45/2)*cp*T_ext[t] , C*T[t-1,1]/dt, T_ext[t]/Rcond, -q56 -(gap45/2 + gap56 + gap6)*cp*T_ext[t], C*T[t-1,2]/dt]).reshape(-1, 1)
-        T = np.linalg.solve(A, B)
+        A = np.array([
+            [((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0, 0, 0, 0],  #Noeud 11
+            [1/Rconv, -((1/R_beton1)+(1/Rconv)) - cp*(a23+a32+(gap1 + gap12 + gap23/2)), 1/R_beton1, cp*(a23 + a32), 0, 0, 0, 0, 0], #Noeud 12
+            [0, -1/R_beton1, ((C/dt)+(1/R_beton1)), 0, 0, 0, 0, 0, 0], #Noeud 13
+            [0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0], #Noeud 21
+            [0, cp*(a32 + a23), 0, 1/Rconv,  -((1/R_beton2)+(1/Rconv)) + -cp*(a32 + a23 + a45 + a54 + (gap23/2 + gap34 + gap45/2)), 1/R_beton2, 0, cp*(a45 + a54), 0], #Noeud 22
+            [0, 0, 0, 0, -1/R_beton2, ((C/dt)+(1/R_beton2)), 0, 0, 0], #Noeud 23
+            [0, 0, 0, 0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0], #Noeud 31
+            [0, 0, 0, 0, cp*(a45 + a54), 0, 1/Rconv,  -((1/R_beton3)+(1/Rconv)) - cp*(a45 + a54 + (gap45/2 + gap56 + gap6)), 1/R_beton3], #Noeud 32
+            [0, 0, 0, 0, 0, 0, 0, -1/R_beton3, ((C/dt)+(1/R_beton3))] #Noeud 33
+        ], dtype=float)
+        B = np.array([T_ext[t]/Rcond, -q12 - cp*(gap12 + gap23/2 + gap1)*T_ext[t], C*T[t-1,0]/dt, T_ext[t]/Rcond, -q34 -(gap23/2 + gap34 + gap45/2)*cp*T_ext[t] , C*T[t-1,4]/dt, T_ext[t]/Rcond, -q56 -(gap45/2 + gap56 + gap6)*cp*T_ext[t], C*T[t-1,7]/dt]).reshape(-1, 1)
+        T_sol = np.linalg.solve(A, B)
+        T[t] = T_sol.flatten()
         n = t - 2
-        T2[n, 0] = T[1, 0] #T12
-        T2[n, 1] = T[4, 0] #T22
-        T2[n, 2] = T[7, 0] #T32
-        T3[n, 0] = T[2, 0] #T13
-        T3[n, 1] = T[5, 0] #T23
-        T3[n, 2] = T[8, 0] #T33   
+        T2[n, 0] = T[t, 1] #T12
+        T2[n, 1] = T[t, 4] #T22
+        T2[n, 2] = T[t, 7] #T32
+        T3[n, 0] = T[t, 2] #T13
+        T3[n, 1] = T[t, 5] #T23
+        T3[n, 2] = T[t, 8] #T33   
     else:
         q12 = 0
         q34 = 0
@@ -107,12 +112,42 @@ for t in range (2,nt-1):
         a54	= 0.08528
         a56	= 0.03718
         a65	= 0.05788
-        B = np.array([T_ext[t]/Rcond, -q12 - cp*(gap12 + gap23/2 + gap1)*T_ext[t], C*T[t-1,0]/dt, T_ext[t]/Rcond, -q34 -(gap23/2 + gap34 + gap45/2)*cp*T_ext[t] , C*T[t-1,1]/dt, T_ext[t]/Rcond, -q56 -(gap45/2 + gap56 + gap6)*cp*T_ext[t], C*T[t-1,2]/dt]).reshape(-1, 1)
-        T = np.linalg.solve(A, B)
+        A = np.array([
+            [((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0, 0, 0, 0],  #Noeud 11
+            [1/Rconv, -((1/R_beton1)+(1/Rconv)) - cp*(a23+a32+(gap1 + gap12 + gap23/2)), 1/R_beton1, cp*(a23 + a32), 0, 0, 0, 0, 0], #Noeud 12
+            [0, -1/R_beton1, ((C/dt)+(1/R_beton1)), 0, 0, 0, 0, 0, 0], #Noeud 13
+            [0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0], #Noeud 21
+            [0, cp*(a32 + a23), 0, 1/Rconv,  -((1/R_beton2)+(1/Rconv)) + -cp*(a32 + a23 + a45 + a54 + (gap23/2 + gap34 + gap45/2)), 1/R_beton2, 0, cp*(a45 + a54), 0], #Noeud 22
+            [0, 0, 0, 0, -1/R_beton2, ((C/dt)+(1/R_beton2)), 0, 0, 0], #Noeud 23
+            [0, 0, 0, 0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0], #Noeud 31
+            [0, 0, 0, 0, cp*(a45 + a54), 0, 1/Rconv,  -((1/R_beton3)+(1/Rconv)) - cp*(a45 + a54 + (gap45/2 + gap56 + gap6)), 1/R_beton3], #Noeud 32
+            [0, 0, 0, 0, 0, 0, 0, -1/R_beton3, ((C/dt)+(1/R_beton3))] #Noeud 33
+        ], dtype=float)
+        B = np.array([T_ext[t]/Rcond, -q12 - cp*(gap12 + gap23/2 + gap1)*T_ext[t], C*T[t-1,0]/dt, T_ext[t]/Rcond, -q34 -(gap23/2 + gap34 + gap45/2)*cp*T_ext[t] , C*T[t-1,4]/dt, T_ext[t]/Rcond, -q56 -(gap45/2 + gap56 + gap6)*cp*T_ext[t], C*T[t-1,7]/dt]).reshape(-1, 1)
+        T_sol = np.linalg.solve(A, B)
+        T[t] = T_sol.flatten()
         n = t - 2
-        T2[n, 0] = T[1, 0] #T12
-        T2[n, 1] = T[4, 0] #T22
-        T2[n, 2] = T[7, 0] #T32
-        T3[n, 0] = T[2, 0] #T13
-        T3[n, 1] = T[5, 0] #T23
-        T3[n, 2] = T[8, 0] #T33  
+        T2[n, 0] = T[t, 1] #T12
+        T2[n, 1] = T[t, 4] #T22
+        T2[n, 2] = T[t, 7] #T32
+        T3[n, 0] = T[t, 2] #T13
+        T3[n, 1] = T[t, 5] #T23
+        T3[n, 2] = T[t, 8] #T33  
+print("T2 = ")
+print(T2)
+
+# Graphique de T2 en fonction du temps
+print("\nCréation du graphique...")
+temps_heures = np.arange(len(T2))
+plt.figure(figsize=(12, 6))
+plt.plot(temps_heures, T2[:, 0], label='T22 (zone 1)', linewidth=2)
+plt.plot(temps_heures, T2[:, 1], label='T22 (zone 2)', linewidth=2)
+plt.plot(temps_heures, T2[:, 2], label='T22 (zone 3)', linewidth=2)
+plt.xlabel('Temps (heures)')
+plt.ylabel('Température (°C)')
+plt.title('Évolution de la température T2 en fonction du temps')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('T2_vs_temps.png', dpi=150)
+print("✓ Graphique sauvegardé en tant que 'T2_vs_temps.png'")
