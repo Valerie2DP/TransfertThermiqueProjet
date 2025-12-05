@@ -7,37 +7,112 @@ from datetime import datetime
 Long = 26.1 #m
 larg = 3.7 #m
 Haut = 1.7 #m
-k_beton =
-h_air =
-k_asph = 
-k_acier = 
-q_heater1 = 10000 #W
-q_heater2 = 7500 #W
-##Débit d'air entre les zones
-a12 = 0.2381
-a21	= 0.4438
-a23	= 0.3268
-a32	= 0.7042
-a34	= 0.2646
-a43	= 0.5915
-a45	= 0.1988
-a54	= 0.2915
-a56	= 0.4694
-a65	= 0.4070
+unite1 = Long/32
+unite2 = larg/4
+cp = 1007 #J/kgK
+e_dalle = 18/1000 #m
+A_section = larg*Long/3
+e_beton = 0.4
+A_mur12 = Haut*(20*unite1 + 10*unite2)
+A_mur34 = Haut*(22*unite1 + 8*unite2)
+A_mur56 = Haut*(22*unite1 + 10*unite2)
+k_beton = 1.8 #W/mK
+h_air = 200 #W/m2K
+k_asph = 1.0 #W/mK
+k_acier = 50 #W/mK
+k_dalle = (8*k_asph + 10*k_acier)/18
+C_vol = 2300*880 # J/m3K
+C = C_vol * e_dalle * A_section # J/K
+##Débit d'air 
+gap12 = 0.04107
+gap23 = 0.01930
+gap34 = -0.06402
+gap45 = -0.05980
+gap56 = -0.03247
+gap1 = 0.04483
+gap6 = 0.02567
 
+##Résistances
+Rcond = e_dalle/(k_dalle*A_section)
+Rconv = 1/(h_air*A_section)
+R_beton1 = e_beton/(k_beton*A_mur12)
+R_beton2 = e_beton/(k_beton*A_mur34)
+R_beton3 = e_beton/(k_beton*A_mur56)
+R_convbeton1 = 1/(h_air*A_mur12)
+R_convbeton2 = 1/(h_air*A_mur34)
+R_convbeton3 = 1/(h_air*A_mur56)
+Req1 = R_beton1 + R_convbeton1
+Req2 = R_beton2 + R_convbeton2
+Req3 = R_beton3 + R_convbeton3
+
+#chaleur
+q_heater_r = 10000 #W
+q_heater_b = 7500 #W
 #Initalisation
-dt = 1
+dt = 3600
 nt = 1800
-
-T3 = np.zeros((nt, m)) #matrice y t
-
+data = pd.read_csv('nouveau_fichier_de_données_en_heure.csv')
+T_ext = data['Outdoor temperature [deg. C]'].values
+T2 = np.zeros((nt-1, 3)) #matrice T2 t
+T3 = np.zeros((nt-1, 3)) #matrice T2 t
 #Système matriciel
 T = np.zeros((9,1)) 
-M = np.array([
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9]
-])
-B = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]).reshape(-1, 1)
+A = np.array([
+    [((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0, 0, 0, 0],  #Noeud 11
+    [1/Rconv, -((1/R_beton1)+(1/Rconv)) - cp*(a23+a32+(gap1 + gap12 + gap23/2)), 1/R_beton1, cp*(a23 + a32), 0, 0, 0, 0, 0], #Noeud 12
+    [0, -1/R_beton1, ((C/dt)+(1/R_beton1)), 0, 0, 0, 0, 0, 0], #Noeud 13
+    [0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0, 0, 0, 0], #Noeud 21
+    [0, cp*(a32 + a23), 0, 1/Rconv,  -((1/R_beton2)+(1/Rconv)) + -cp*(a32 + a23 + a45 + a54 + (gap23/2 + gap34 + gap45/2)), 1/R_beton2, 0, cp*(a45 + a54), 0], #Noeud 22
+    [0, 0, 0, 0, -1/R_beton2, ((C/dt)+(1/R_beton2)), 0, 0, 0], #Noeud 23
+    [0, 0, 0, 0, 0, 0, ((1/Rconv)+(1/Rcond)), -1/Rconv, 0], #Noeud 31
+    [0, 0, 0, 0, cp*(a45 + a54), 0, 1/Rconv,  -((1/R_beton3)+(1/Rconv)) - cp*(a45 + a54 + (gap45/2 + gap56 + gap6)), 1/R_beton3], #Noeud 32
+    [0, 0, 0, 0, 0, 0, 0, -1/R_beton3, ((C/dt)+(1/R_beton3))] #Noeud 33
+], dtype=float)
 #Résolution
-for t in range (0,1800):    
+for t in range (2,nt-1):
+    if T_ext[t] < 3:
+        q12 = q_heater_r + 2*q_heater_b
+        q34 = q_heater_r + q_heater_b
+        q56 = q_heater_r + q_heater_b
+        a12 = 0.2381
+        a21	= 0.4438
+        a23	= 0.3268
+        a32	= 0.7042
+        a34	= 0.2646
+        a43	= 0.5915
+        a45	= 0.1988
+        a54	= 0.2915
+        a56	= 0.4694
+        a65	= 0.4070
+        B = np.array([T_ext[t]/Rcond, -q12 - cp*(gap12 + gap23/2 + gap1)*T_ext[t], C*T[t-1,0]/dt, T_ext[t]/Rcond, -q34 -(gap23/2 + gap34 + gap45/2)*cp*T_ext[t] , C*T[t-1,1]/dt, T_ext[t]/Rcond, -q56 -(gap45/2 + gap56 + gap6)*cp*T_ext[t], C*T[t-1,2]/dt]).reshape(-1, 1)
+        T = np.linalg.solve(A, B)
+        n = t - 2
+        T2[n, 0] = T[1, 0] #T12
+        T2[n, 1] = T[4, 0] #T22
+        T2[n, 2] = T[7, 0] #T32
+        T3[n, 0] = T[2, 0] #T13
+        T3[n, 1] = T[5, 0] #T23
+        T3[n, 2] = T[8, 0] #T33   
+    else:
+        q12 = 0
+        q34 = 0
+        q56 = 0
+        a12	= 0.04113
+        a21	= 0.06844
+        a23	= 0.05290
+        a32	= 0.09304
+        a34	= 0.05121
+        a43	= 0.10386
+        a45	= 0.04163
+        a54	= 0.08528
+        a56	= 0.03718
+        a65	= 0.05788
+        B = np.array([T_ext[t]/Rcond, -q12 - cp*(gap12 + gap23/2 + gap1)*T_ext[t], C*T[t-1,0]/dt, T_ext[t]/Rcond, -q34 -(gap23/2 + gap34 + gap45/2)*cp*T_ext[t] , C*T[t-1,1]/dt, T_ext[t]/Rcond, -q56 -(gap45/2 + gap56 + gap6)*cp*T_ext[t], C*T[t-1,2]/dt]).reshape(-1, 1)
+        T = np.linalg.solve(A, B)
+        n = t - 2
+        T2[n, 0] = T[1, 0] #T12
+        T2[n, 1] = T[4, 0] #T22
+        T2[n, 2] = T[7, 0] #T32
+        T3[n, 0] = T[2, 0] #T13
+        T3[n, 1] = T[5, 0] #T23
+        T3[n, 2] = T[8, 0] #T33  
