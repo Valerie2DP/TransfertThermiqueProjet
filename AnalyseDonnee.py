@@ -63,6 +63,31 @@ for n, heure in enumerate(hours): ### pour new_times l'indice 25555, pour hours 
         print(n)
 
 
+
+
+###################################################################################### regle de controle
+# regarder le capteur 1 et le capteur 29 et temperature exterieur
+# temperature du milieu pour les capteurs, regarder la températures extérieur
+
+thermocouple_1 =  df['T[degC]-Mid-S1']
+thermocouple_2 =  df['T[degC]-Mid-S29']
+Texterieur = df['Outdoor temperature [deg. C]']
+
+## fabrication de figure
+fig, axes = plt.subplots(3,1,figsize=(8,8),sharex=True)
+axes_x = np.arange(len(Texterieur[25555:]))
+
+## fabriquer les intersections... entre 3 et temperature ext
+axes[0].plot(axes_x, Texterieur[25555:], label='Température extérieur')
+axes[0].plot(axes_x, [3]*len(axes_x))
+axes[1].plot(axes_x, thermocouple_1[25555:], label='Thermocouple S1')
+axes[2].plot(axes_x, thermocouple_2[25555:], label='Thermocouple S29')
+# axes[2].set_xticks(new_xtick, new_hourslabel, rotation=20, fontsize=9)
+fig.legend()
+
+plt.show()
+
+
 ## Pour la stratification thermique, faire moyenne de chaque capteur par niveau (low, mid, top)
 low_level = df.loc[:,"T[degC]-Low-S1":"T[degC]-Low-S29"] # permet de recuperer un intervalle de colonnes 
 mid_level = df.loc[:,"T[degC]-Mid-S1":"T[degC]-Mid-S29"]
@@ -158,16 +183,7 @@ f.savefig('EvolutionTemperatureMoyPlateauPerHour.png', dpi=1300) ### gros proble
 
 
 
-###################################################################################### regle de controle
-# regarder le capteur 1 et le capteur 29
-# temperature du milieu...
 
-thermocouple_1 = [df['T[degC]-Top-S1'], df['T[degC]-Mid-S1'], df['T[degC]-Low-S1']]
-thermocouple_2 = [df['T[degC]-Top-S29'], df['T[degC]-Mid-S29'], df['T[degC]-Low-S29']]
-
-## fabrication de figure
-
-for level in 
 
 # ## quantifier par heure
 # moy_thermocouple_1 = []
