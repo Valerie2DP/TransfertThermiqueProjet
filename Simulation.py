@@ -42,26 +42,27 @@ q_heater_b = 7500 #W
 #Initalisation
 dt = 3600
 nt = 1800
-data = pd.read_csv('nouveau_fichier_de_données_en_heure.csv')
+data = pd.read_csv('nouveau_fichier_de_données_en_heure.csv')  # Assurez-vous que le fichier CSV est dans le même répertoire que ce script
 T_ext = data['Outdoor temperature [deg. C]'].values
 T2 = np.zeros((nt-1, 3)) #matrice T2 t
 T3 = np.zeros((nt-1, 3)) #matrice T2 t
 #Système matriciel
 T = np.zeros((nt-1, 9)) 
 # Initialiser T avec une température de départ (20°C)
-T[0, :] = T_ext[0]
-T[1, :] = T_ext[0]
+T[0, :] = 35
+T[1, :] = 35
+    # Calculer les résistances à chaque itération
+Rcond = e_dalle/(k_dalle*A_section)
+Rconv = 1/(h_air*A_section)
+R_beton1 = e_beton/(k_beton*A_mur12)
+R_beton2 = e_beton/(k_beton*A_mur34)
+R_beton3 = e_beton/(k_beton*A_mur56)
+Req1 = R_beton1 + 1/(h_air*A_mur12)
+Req2 = R_beton2 + 1/(h_air*A_mur34)
+Req3 = R_beton3 + 1/(h_air*A_mur56)
+
 #Résolution
 for t in range (2,nt-1):
-    # Calculer les résistances à chaque itération
-    Rcond = e_dalle/(k_dalle*A_section)
-    Rconv = 1/(h_air*A_section)
-    R_beton1 = e_beton/(k_beton*A_mur12)
-    R_beton2 = e_beton/(k_beton*A_mur34)
-    R_beton3 = e_beton/(k_beton*A_mur56)
-    Req1 = R_beton1 + 1/(h_air*A_mur12)
-    Req2 = R_beton2 + 1/(h_air*A_mur34)
-    Req3 = R_beton3 + 1/(h_air*A_mur56)
     
     if T_ext[t] < 3:
         q12 = q_heater_r + 2*q_heater_b
