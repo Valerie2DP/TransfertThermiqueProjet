@@ -1,11 +1,16 @@
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from datetime import datetime
-
-# Utiliser un backend non-interactif pour éviter les problèmes
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import gc
+import os
+
+# Supprimer les anciens graphiques
+if os.path.exists('T2_vs_temps.png'):
+    os.remove('T2_vs_temps.png')
+
+gc.collect()
 
 # Paramètres physiques
 Long = 26.1  # m
@@ -15,7 +20,7 @@ Haut = 1.7   # m
 unite1 = Long / 32
 unite2 = larg / 4
 
-cp = 1007        # J/kgK
+cp = 1007  # J/kgK
 e_dalle = 18 / 1000  # m
 A_section = larg * Long / 3
 e_beton = 0.4
@@ -24,10 +29,11 @@ A_mur12 = Haut * (20 * unite1 + 10 * unite2)
 A_mur34 = Haut * (22 * unite1 + 8 * unite2)
 A_mur56 = Haut * (22 * unite1 + 10 * unite2)
 
-k_beton = 1.8   # W/mK
-h_air = 30      # W/m2K
-k_asph = 1.0    # W/mK
-k_acier = 50    # W/mK
+k_beton = 1.8  # W/mK
+h_air = 10     # W/m2K
+
+k_asph = 1.0   # W/mK
+k_acier = 50   # W/mK
 k_dalle = (8 * k_asph + 10 * k_acier) / 18
 
 C_vol = 2300 * 880  # J/m3K
@@ -61,11 +67,12 @@ T = np.zeros((nt - 1, 9))
 
 # Initialiser T avec une température de départ (20°C)
 for i in range(9):
-    T[0, i] = T_ext[0]
-    T[1, i] = T_ext[0]
+    T[0, i] = 35
+    T[1, i] = 35
 
 # Résolution
 for t in range(2, nt - 1):
+
     # Calculer les résistances à chaque itération
     Rcond = e_dalle / (k_dalle * A_section)
     Rconv = 1 / (h_air * A_section)
@@ -78,7 +85,7 @@ for t in range(2, nt - 1):
     Req2 = R_beton2 + 1 / (h_air * A_mur34)
     Req3 = R_beton3 + 1 / (h_air * A_mur56)
 
-    if T_ext[t] < 3:
+    if T_ext[t] < 5:
         q12 = q_heater_r + 2 * q_heater_b
         q34 = q_heater_r + q_heater_b
         q56 = q_heater_r + q_heater_b
@@ -98,31 +105,54 @@ for t in range(2, nt - 1):
             [((1 / Rconv) + (1 / Rcond)), -1 / Rconv, 0, 0, 0, 0, 0, 0, 0],  # Noeud 11
             [1 / Rconv,
              -((1 / Req1) + (1 / Rconv)) - cp * (a23 + a32 + (gap1 + gap12 + gap23 / 2)),
-             1 / Req1, cp * (a23 + a32), 0, 0, 0, 0, 0],  # Noeud 12
-            [0, -1 / Req1, ((C / dt) + (1 / Req1)), 0, 0, 0, 0, 0, 0],  # Noeud 13
-
-            [0, 0, 0, ((1 / Rconv) + (1 / Rcond)), -1 / Rconv, 0, 0, 0, 0],  # Noeud 21
-            [0, cp * (a32 + a23), 0, 1 / Rconv,
+             1 / Req1,
+             cp * (a23 + a32),
+             0, 0, 0, 0, 0],  # Noeud 12
+            [0,
+             -1 / Req1,
+             ((C / dt) + (1 / Req1)),
+             0, 0, 0, 0, 0, 0],  # Noeud 13
+            [0, 0, 0,
+             ((1 / Rconv) + (1 / Rcond)),
+             -1 / Rconv,
+             0, 0, 0, 0],  # Noeud 21
+            [0,
+             cp * (a32 + a23),
+             0,
+             1 / Rconv,
              -((1 / Req2) + (1 / Rconv)) - cp * (a32 + a23 + a45 + a54 + (gap23 / 2 + gap34 + gap45 / 2)),
-             1 / Req2, 0, cp * (a45 + a54), 0],  # Noeud 22
-            [0, 0, 0, 0, -1 / Req2, ((C / dt) + (1 / Req2)), 0, 0, 0],  # Noeud 23
-
-            [0, 0, 0, 0, 0, 0, ((1 / Rconv) + (1 / Rcond)), -1 / Rconv, 0],  # Noeud 31
-            [0, 0, 0, 0, cp * (a45 + a54), 0, 1 / Rconv,
+             1 / Req2,
+             0,
+             cp * (a45 + a54),
+             0],  # Noeud 22
+            [0, 0, 0,
+             0,
+             -1 / Req2,
+             ((C / dt) + (1 / Req2)),
+             0, 0, 0],  # Noeud 23
+            [0, 0, 0, 0, 0, 0,
+             ((1 / Rconv) + (1 / Rcond)),
+             -1 / Rconv,
+             0],  # Noeud 31
+            [0, 0, 0, 0,
+             cp * (a45 + a54),
+             0,
+             1 / Rconv,
              -((1 / Req3) + (1 / Rconv)) - cp * (a45 + a54 + (gap45 / 2 + gap56 + gap6)),
              1 / Req3],  # Noeud 32
-            [0, 0, 0, 0, 0, 0, 0, -1 / Req3, ((C / dt) + (1 / Req3))]  # Noeud 33
+            [0, 0, 0, 0, 0, 0,
+             0,
+             -1 / Req3,
+             ((C / dt) + (1 / Req3))]  # Noeud 33
         ], dtype=float)
 
         B = np.array([
             T_ext[t] / Rcond,
             -q12 - cp * (gap12 + gap23 / 2 + gap1) * T_ext[t],
             C * T[t - 1, 2] / dt,
-
             T_ext[t] / Rcond,
             -q34 - (gap23 / 2 + gap34 + gap45 / 2) * cp * T_ext[t],
             C * T[t - 1, 5] / dt,
-
             T_ext[t] / Rcond,
             -q56 - (gap45 / 2 + gap56 + gap6) * cp * T_ext[t],
             C * T[t - 1, 8] / dt
@@ -148,31 +178,54 @@ for t in range(2, nt - 1):
             [((1 / Rconv) + (1 / Rcond)), -1 / Rconv, 0, 0, 0, 0, 0, 0, 0],  # Noeud 11
             [1 / Rconv,
              -((1 / Req1) + (1 / Rconv)) - cp * (a23 + a32 + (gap1 + gap12 + gap23 / 2)),
-             1 / Req1, cp * (a23 + a32), 0, 0, 0, 0, 0],  # Noeud 12
-            [0, -1 / Req1, ((C / dt) + (1 / Req1)), 0, 0, 0, 0, 0, 0],  # Noeud 13
-
-            [0, 0, 0, ((1 / Rconv) + (1 / Rcond)), -1 / Rconv, 0, 0, 0, 0],  # Noeud 21
-            [0, cp * (a32 + a23), 0, 1 / Rconv,
+             1 / Req1,
+             cp * (a23 + a32),
+             0, 0, 0, 0, 0],  # Noeud 12
+            [0,
+             -1 / Req1,
+             ((C / dt) + (1 / Req1)),
+             0, 0, 0, 0, 0, 0],  # Noeud 13
+            [0, 0, 0,
+             ((1 / Rconv) + (1 / Rcond)),
+             -1 / Rconv,
+             0, 0, 0, 0],  # Noeud 21
+            [0,
+             cp * (a32 + a23),
+             0,
+             1 / Rconv,
              -((1 / Req2) + (1 / Rconv)) - cp * (a32 + a23 + a45 + a54 + (gap23 / 2 + gap34 + gap45 / 2)),
-             1 / Req2, 0, cp * (a45 + a54), 0],  # Noeud 22
-            [0, 0, 0, 0, -1 / Req2, ((C / dt) + (1 / Req2)), 0, 0, 0],  # Noeud 23
-
-            [0, 0, 0, 0, 0, 0, ((1 / Rconv) + (1 / Rcond)), -1 / Rconv, 0],  # Noeud 31
-            [0, 0, 0, 0, cp * (a45 + a54), 0, 1 / Rconv,
+             1 / Req2,
+             0,
+             cp * (a45 + a54),
+             0],  # Noeud 22
+            [0, 0, 0,
+             0,
+             -1 / Req2,
+             ((C / dt) + (1 / Req2)),
+             0, 0, 0],  # Noeud 23
+            [0, 0, 0, 0, 0, 0,
+             ((1 / Rconv) + (1 / Rcond)),
+             -1 / Rconv,
+             0],  # Noeud 31
+            [0, 0, 0, 0,
+             cp * (a45 + a54),
+             0,
+             1 / Rconv,
              -((1 / Req3) + (1 / Rconv)) - cp * (a45 + a54 + (gap45 / 2 + gap56 + gap6)),
              1 / Req3],  # Noeud 32
-            [0, 0, 0, 0, 0, 0, 0, -1 / Req3, ((C / dt) + (1 / Req3))]  # Noeud 33
+            [0, 0, 0, 0, 0, 0,
+             0,
+             -1 / Req3,
+             ((C / dt) + (1 / Req3))]  # Noeud 33
         ], dtype=float)
 
         B = np.array([
             T_ext[t] / Rcond,
             -q12 - cp * (gap12 + gap23 / 2 + gap1) * T_ext[t],
             C * T[t - 1, 2] / dt,
-
             T_ext[t] / Rcond,
             -q34 - (gap23 / 2 + gap34 + gap45 / 2) * cp * T_ext[t],
             C * T[t - 1, 5] / dt,
-
             T_ext[t] / Rcond,
             -q56 - (gap45 / 2 + gap56 + gap6) * cp * T_ext[t],
             C * T[t - 1, 8] / dt
@@ -193,14 +246,10 @@ for t in range(2, nt - 1):
     T3[n, 1] = T[t, 5]  # T23
     T3[n, 2] = T[t, 8]  # T33
 
-print("T2 = ")
-print(T2)
-
-print("\nT3 = ")
-print(T3)
+# Ne pas afficher les grandes matrices en console pour obtenir seulement le graphique
 
 # Graphique de T2 en fonction du temps
-print("\nCréation du graphique T2...")
+print("Création du graphique T2...")
 temps_heures = np.arange(len(T2))
 
 plt.figure(figsize=(12, 6))
@@ -215,5 +264,4 @@ plt.legend()
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig('T2_vs_temps.png', dpi=150)
-
 print("Graphique T2 sauvegardé en tant que 'T2_vs_temps.png'")
