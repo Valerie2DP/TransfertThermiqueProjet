@@ -3,9 +3,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-# Utiliser un backend non-interactif pour éviter les problèmes
 import matplotlib
-matplotlib.use('Agg')
+
 
 #Paramètres physiques
 Long = 26.1 #m
@@ -27,7 +26,8 @@ k_acier = 50 #W/mK
 k_dalle = (8*k_asph + 10*k_acier)/18
 C_vol = 2300*880 # J/m3K
 C = C_vol * e_dalle * A_section # J/K
-##Débit d'air 
+
+#Débit d'air 
 gap12 = 0.04107
 gap23 = 0.01930
 gap34 = -0.06402
@@ -39,19 +39,23 @@ gap6 = 0.02567
 #chaleur
 q_heater_r = 10000 #W
 q_heater_b = 7500 #W
+
 #Initalisation
 dt = 3600
 nt = 1800
-data = pd.read_csv('nouveau_fichier_de_données_en_heure.csv')  # Assurez-vous que le fichier CSV est dans le même répertoire que ce script
+data = pd.read_csv('nouveau_fichier_de_données_en_heure.csv') 
 T_ext = data['Outdoor temperature [deg. C]'].values
 T2 = np.zeros((nt-1, 3)) #matrice T2 t
 T3 = np.zeros((nt-1, 3)) #matrice T2 t
+
 #Système matriciel
 T = np.zeros((nt-1, 9)) 
-# Initialiser T avec une température de départ (20°C)
+
+# Initialiser T avec une température de départ (35°C)
 T[0, :] = 35
 T[1, :] = 35
-    # Calculer les résistances à chaque itération
+
+# Calculer les résistances à chaque itération
 Rcond = e_dalle/(k_dalle*A_section)
 Rconv = 1/(h_air*A_section)
 R_beton1 = e_beton/(k_beton*A_mur12)
@@ -136,24 +140,16 @@ for t in range (2,nt-1):
         T3[n, 0] = T[t, 2] #T13
         T3[n, 1] = T[t, 5] #T23
         T3[n, 2] = T[t, 8] #T33  
-print("T2 = ")
-print(T2)
-
-print("\nT3 = ")
-print(T3)
 
 # Graphique de T2 en fonction du temps
-print("\nCréation du graphique T2...")
 temps_heures = np.arange(len(T2))
 plt.figure(figsize=(12, 6))
-plt.plot(temps_heures, T2[:, 0], label='T12 (zone 1)', linewidth=2)
-plt.plot(temps_heures, T2[:, 1], label='T22 (zone 2)', linewidth=2)
-plt.plot(temps_heures, T2[:, 2], label='T32 (zone 3)', linewidth=2)
+plt.plot(temps_heures, T2[:, 0], label='T12 (P1 et P2)', linewidth=2)
+plt.plot(temps_heures, T2[:, 1], label='T22 (P3 et P3)', linewidth=2)
+plt.plot(temps_heures, T2[:, 2], label='T32 (P5 et P6)', linewidth=2)
 plt.xlabel('Temps (heures)')
 plt.ylabel('Température (°C)')
-plt.title('Évolution de la température T2 en fonction du temps')
+plt.title('Évolution de la température moyenne dans le puit en fonction du temps')
 plt.legend()
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig('T2_vs_temps.png', dpi=150)
-print("✓ Graphique T2 sauvegardé en tant que 'T2_vs_temps.png'")
+plt.show()
+print('Code exécuté')   
