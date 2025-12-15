@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-df = pd.read_csv("measurements.csv", delimiter=";")
+df = pd.read_csv("/Users/smg/GitHub/transfert thermique/TransfertThermiqueProjet/measurements.csv", delimiter=";")
 
 ## recupere les dates heure et minutes de l'acquisition de donnée du .csv
 time = df["Time"]
@@ -192,14 +192,14 @@ print(date_importante)
 
 
 # faire figure recapitulative de temperature exterieur et des capteurs S1 et S29
-figure_regle, (ax1, ax2) = plt.subplots(2,1,figsize=(10,8), sharex=True)
+figure_regle, (ax1, ax2, ax3) = plt.subplots(3,1,figsize=(10,8), sharex=True)
 axe_x = np.arange(0,len(Texterieur))[25557:]
 
 ## plot la température extérieur
 ax1.plot(axe_x, temperature_apres_26, label='Température extérieur', color='blue')
 ax1.plot(axe_x, [3]*len(axe_x),color='orchid', label='seuil de 3 degree')
 ax2.plot(axe_x, thermocouple_2[25557:], label='Thermocouple 2', color='darkorange')
-# ax3.plot(axe_x, thermocouple_1[25557:], label='Thermocouple 1', color='green')
+ax3.plot(axe_x, thermocouple_1[25557:], label='Thermocouple 1', color='green')
 figure_regle.supylabel("Température [$^\circ$C]", fontsize=14)
 figure_regle.legend()
 
