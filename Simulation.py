@@ -68,7 +68,7 @@ Req3 = R_beton3 + 1/(h_air*A_mur56)
 #Résolution
 for t in range (2,nt-1):
     
-    if T_ext[t] < 3:
+    if T_ext[t] < 0.8:
         q12 = q_heater_r + 2*q_heater_b
         q34 = q_heater_r + q_heater_b
         q56 = q_heater_r + q_heater_b

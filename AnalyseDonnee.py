@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-df = pd.read_csv("/Users/smg/GitHub/transfert thermique/TransfertThermiqueProjet/measurements.csv", delimiter=";")
+df = pd.read_csv("measurements.csv", delimiter=";")
 
 ## recupere les dates heure et minutes de l'acquisition de donnée du .csv
 time = df["Time"]
@@ -181,29 +181,42 @@ Texterieur = df['Outdoor temperature [deg. C]']
 # ##sauvegarder la figure:
 # f.savefig('EvolutionTemperatureMoyPlateauPerHour.png', dpi=1300) ### gros probleme a suivre
 
-## recuperer les dates
+## recuperer les indices des moments 
 temperature_apres_26 = Texterieur[25557:]
-date_importante = []
+seuil_3 = []
 for i, element in enumerate(temperature_apres_26):
     if 3 <= element <= 3.05:
-        date_importante.append(i)
+        seuil_3.append(i)
 
-print(date_importante)
+seuil_15 = []
+for m, temperature in enumerate(temperature_apres_26):
+    if 0.8 <= temperature <= 1:
+        seuil_15.append(m)
 
 
 # faire figure recapitulative de temperature exterieur et des capteurs S1 et S29
-figure_regle, (ax1, ax2, ax3) = plt.subplots(3,1,figsize=(10,8), sharex=True)
+figure_regle, (ax1, ax2) = plt.subplots(2,1,figsize=(10,5), sharex=True)
 axe_x = np.arange(0,len(Texterieur))[25557:]
 
 ## plot la température extérieur
 ax1.plot(axe_x, temperature_apres_26, label='Température extérieur', color='blue')
-ax1.plot(axe_x, [3]*len(axe_x),color='orchid', label='seuil de 3 degree')
-ax2.plot(axe_x, thermocouple_2[25557:], label='Thermocouple 2', color='darkorange')
-ax3.plot(axe_x, thermocouple_1[25557:], label='Thermocouple 1', color='green')
+## marquer les moments au cest plus haut que 3 degree
+ax1.plot(axe_x, [3]*len(axe_x), color='orchid', label='seuil de 3 degree')
+ax1.plot(axe_x, [0.8]*len(axe_x), color='darkred', label='seuil de 0.8 degree')
+for m in seuil_15:
+    ax1.axvline(x=m+25557, ymin=-1, ymax=1, color='black', ls='--', lw=1)
+
+## plot du thermocouple
+ax2.plot(axe_x, thermocouple_2[25557:], label='Thermocouple', color='darkorange')
+for m in seuil_15:
+    ax2.axvline(x=m+25557, ymin=-1, ymax=1, color='black', ls='--',lw=1)
+
+
+## details mise en forme... arranger un xticks
 figure_regle.supylabel("Température [$^\circ$C]", fontsize=14)
-figure_regle.legend()
+figure_regle.supxlabel('Temps [2 min]')
+figure_regle.legend(bbox_to_anchor=[1,1.02])
 
+figure_regle.savefig('regle0temperature-exterieur.png', dpi=1300)
 
-
-plt.show()
 
