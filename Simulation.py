@@ -65,6 +65,9 @@ Req1 = R_beton1 + 1/(h_air*A_mur12)
 Req2 = R_beton2 + 1/(h_air*A_mur34)
 Req3 = R_beton3 + 1/(h_air*A_mur56)
 
+## calculer les heures de chauffages
+consommation_post_26_janvier = []
+consommation_totale = []
 #Résolution
 for t in range (2,nt-1):
     
@@ -104,6 +107,14 @@ for t in range (2,nt-1):
         T3[n, 0] = T[t, 2] #T13
         T3[n, 1] = T[t, 5] #T23
         T3[n, 2] = T[t, 8] #T33   
+        
+        ## calculer les heures de chauffage totale
+        consommation_totale.append(n)
+
+        ## calcule le nombre heure de chauffage, après le 26 janvier?
+        if 851 < n:
+            consommation_post_26_janvier.append(n)
+
     else:
         q12 = 0
         q34 = 0
@@ -145,11 +156,15 @@ for t in range (2,nt-1):
 temps_heures = np.arange(len(T2))
 plt.figure(figsize=(12, 6))
 plt.plot(temps_heures, T2[:, 0], label='T12 (P1 et P2)', linewidth=2)
-plt.plot(temps_heures, T2[:, 1], label='T22 (P3 et P3)', linewidth=2)
+plt.plot(temps_heures, T2[:, 1], label='T22 (P3 et P4)', linewidth=2)
 plt.plot(temps_heures, T2[:, 2], label='T32 (P5 et P6)', linewidth=2)
 plt.xlabel('Temps (heures)')
 plt.ylabel('Température (°C)')
 plt.title('Évolution de la température moyenne dans le puit en fonction du temps')
 plt.legend()
-plt.show()
+# plt.show()
 print('Code exécuté')   
+
+
+## résultats de consommation totale pour les : 
+print(f"La consommation totale de chauffage par les aérothermes : {60*len(consommation_totale)} KWh")
