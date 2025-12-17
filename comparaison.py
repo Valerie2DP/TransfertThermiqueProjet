@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ## valeur de la simulation de la moyennes de capteurs de toutes les hauteurs (0.4, 0.8, 1.2) par 2 plateaux, en heures
-Simu_P1P2 = T2[:, 0]
+Simu_P1P2 = T2[:, 2]
 Simu_P3P4 = T2[:, 1]
-Simu_P5P6 = T2[:, 2]
+Simu_P5P6 = T2[:, 0]
 
 ## valeur des mesures de la moyennes des capteurs de toutes les hauteurs (0.4, 0.8, 1.2) par 2 plateaux, en heures
 Temp_P1P2 =  [(P1 + P2) / 2 for P1, P2 in zip(liste_moy_per_plateau[0], liste_moy_per_plateau[1])]
@@ -35,4 +35,4 @@ ax3.legend(loc='upper left')
 fig.supylabel('Température [$^{\circ}$C]')
 fig.supxlabel('Temps [h]')
 
-fig.savefig('Comparaison-Simulation-Mesures-Regroupement-2Plateaux',dpi=1300)
+fig.savefig('Comparaison-Simulation-Mesures-Regroupement-2Plateaux-v15-regle08-new.png',dpi=1300)
