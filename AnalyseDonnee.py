@@ -149,10 +149,10 @@ liste_couleur = ['blue', 'green', 'purple', 'darkorange', 'cornflowerblue', 'fir
 for i, plateau in enumerate(liste_moy_per_plateau):
     axs[i].plot(hours[851:], plateau[851:], label=liste_nom_plateau[i], color=liste_couleur[i],zorder=0)
     axs[i].set_xticks(new_xtick, new_hourslabel, rotation=20, fontsize=9)
+    axs[i].legend(loc='upper right')
+
 f.supylabel("Température [$^\circ$C]", fontsize=14)
 f.supxlabel("Temps [h]", fontsize=14)
-f.legend(bbox_to_anchor=(0.98,0.98))
-
 ##sauvegarder la figure:
 f.savefig('EvolutionTemperatureMoyPlateauPerHour.png', dpi=1300) ### gros probleme a suivre
 
@@ -193,7 +193,6 @@ for m in seuil_15:
 ## plot du thermocouple
 ax2.plot(axe_x, thermocouple_2[25557:], label='Thermocouple', color='darkorange')
 ax2.plot(axe_x, [3]*len(axe_x), color='orchid')
-
 for m in seuil_15:
     ax2.axvline(x=m+25557, ymin=-1, ymax=1, color='black', ls='--',lw=1)
 
