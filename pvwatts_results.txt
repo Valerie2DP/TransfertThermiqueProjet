@@ -1,0 +1,2 @@
+Total AC System Output between December 21st and March 5th: 98441.58 kWh
+Total AC System Output: 98442 kWh
