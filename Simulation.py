@@ -254,9 +254,9 @@ print("Création du graphique T2...")
 temps_heures = np.arange(len(T2))
  
 plt.figure(figsize=(12, 6))
-plt.plot(temps_heures, T2[:, 0], label='T12 (zone 1)', linewidth=2)
+plt.plot(temps_heures, T2[:, 2], label='T12 (zone 1)', linewidth=2)
 plt.plot(temps_heures, T2[:, 1], label='T22 (zone 2)', linewidth=2)
-plt.plot(temps_heures, T2[:, 2], label='T32 (zone 3)', linewidth=2)
+plt.plot(temps_heures, T2[:, 0], label='T32 (zone 3)', linewidth=2)
  
 plt.xlabel('Temps (heures)')
 plt.ylabel('Température (°C)')

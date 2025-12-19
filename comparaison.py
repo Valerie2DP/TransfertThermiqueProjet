@@ -35,4 +35,5 @@ ax3.legend(loc='upper left')
 fig.supylabel('Température [$^{\circ}$C]')
 fig.supxlabel('Temps [h]')
 
-fig.savefig('Comparaison-Simulation-Mesures-Regroupement-2Plateaux-v15-regle08-new.png',dpi=1300)
+fig.savefig('Comparaison-Simulation-Mesures-Regroupement-2Plateaux.png',dpi=1300)
+print("c'est fini")
